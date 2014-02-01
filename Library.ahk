@@ -19,6 +19,7 @@ Hotkey, %JoystickPrefix%%KeyboardButton%, KeyboardButton
 Hotkey, %JoystickPrefix%%AltF4Button%, AltF4Button
 SetTimer, MouseMove, 10
 SetTimer, MouseWheel, 40
+SetTimer, KeyboardDirections, 150
 return
 
 KeyboardButton:
@@ -162,6 +163,29 @@ MouseWheel:
 		Send {WheelRight}
 	else if Joy2Y < %JoyThresholdLower%
 		Send {WheelLeft}
+	return
+	
+KeyboardDirections:
+	GetKeyState, JoyPOV, %JoystickNumber%JoyPOV
+	if JoyPOV = -1
+		return
+	JoyPOV := JoyPOV / 4500
+	if JoyPOV = 0
+		send {Up}
+	else if JoyPOV = 1
+		send {Up}{Right}
+	else if JoyPOV = 2
+		send {Right}
+	else if JoyPOV = 3
+		send {Down}{Right}
+	else if JoyPOV = 4
+		send {Down}
+	else if JoyPOV = 5
+		send {Down}{Left}
+	else if JoyPOV = 6
+		send {Left}
+	else
+		send {Up}{Left}
 	return
 
 CheckMode:
