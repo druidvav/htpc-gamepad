@@ -1,5 +1,6 @@
+GamepadReady := -1
 SwitchedMode := 1
-CurrentMode := 1
+CurrentMode := 2
 MaxMode := 2
 
 JoyThresholdUpper := 50 + JoyThreshold
@@ -18,7 +19,7 @@ Hotkey, %JoystickPrefix%%EnterButton%, EnterButton
 Hotkey, %JoystickPrefix%%KeyboardButton%, KeyboardButton
 Hotkey, %JoystickPrefix%%AltF4Button%, AltF4Button
 SetTimer, MouseMove, 10
-SetTimer, MouseWheel, 40
+SetTimer, MouseWheel, 70
 SetTimer, KeyboardDirections, 150
 return
 
@@ -153,19 +154,21 @@ MouseMove:
 MouseWheel:
 	if CurrentMode > 1
 		return
-	GetKeyState, Joy2X, %JoystickNumber%JoyR
-	if Joy2X > %JoyThresholdUpper%
-		Send {WheelDown}
-	else if Joy2X < %JoyThresholdLower%
-		Send {WheelUp}
-	GetKeyState, Joy2Y, %JoystickNumber%JoyU
+	GetKeyState, Joy2Y, %JoystickNumber%JoyR
 	if Joy2Y > %JoyThresholdUpper%
-		Send {WheelRight}
+		Send {WheelDown}
 	else if Joy2Y < %JoyThresholdLower%
+		Send {WheelUp}
+	GetKeyState, Joy2X, %JoystickNumber%JoyU
+	if Joy2X > %JoyThresholdUpper%
+		Send {WheelRight}
+	else if Joy2X < %JoyThresholdLower%
 		Send {WheelLeft}
 	return
 	
 KeyboardDirections:
+	if CurrentMode > 1
+		return
 	GetKeyState, JoyPOV, %JoystickNumber%JoyPOV
 	if JoyPOV = -1
 		return
@@ -189,6 +192,29 @@ KeyboardDirections:
 	return
 
 CheckMode:
+	if State := XInput_GetState(0)
+	{
+		if GamepadReady <> 1
+		{
+			TrayTip,Status,Gamepad ready,1,1
+			CurrentMode := SwitchedMode
+		}
+		GamepadReady := 1
+	}
+	else
+	{
+		if GamepadReady <> 0
+			TrayTip,Status,Gamepad disconnected,1,1
+		GamepadReady := 0
+		CurrentMode := 2
+		return
+	}
+		
+	if GamepadReady <> 1
+	{
+		return
+	}
+
 	ifWinExist Steam ahk_class CUIEngineWin32
 	{
 		CurrentMode := 2
