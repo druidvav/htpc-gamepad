@@ -21,18 +21,30 @@ Hotkey, %JoystickPrefix%%AltF4Button%, AltF4Button
 SetTimer, MouseMove, 10
 SetTimer, MouseWheel, 70
 SetTimer, KeyboardDirections, 150
+SetTimer, SpecialButtons, 50
 return
 
 KeyboardButton:
 	if CurrentMode > 1
 		return
-	Send, {Ctrl}{Alt}{Shift}-
+	Send, ^!+-
 	return
 	
 AltF4Button:
 	if CurrentMode > 1
 		return
-	Send, {Alt}{F4}
+	Send, !{F4}
+	return
+	
+SpecialButtons:
+	if CurrentMode > 1
+		return
+	State := XInput_GetState(0)
+	if (State.wButtons & XINPUT_GAMEPAD_GUIDE)
+	{
+		Send #d
+		Sleep 600
+	}
 	return
 
 MouseButtonLeft:
@@ -104,15 +116,13 @@ WaitEnterButtonUp:
 MouseMove:
 	if CurrentMode > 1
 		return
-	MouseNeedsToBeMoved := false
 	SetFormat, float, 03
+	MouseNeedsToBeMoved := false
 	CurrentJoyMultiplier := JoyMultiplier
-	if State := XInput_GetState(0)
-	{		
-		if State.bLeftTrigger > TriggerThreshold
-		{
-			CurrentJoyMultiplier := JoyMultiplierSlower
-		}
+	State := XInput_GetState(0)
+	if State.bLeftTrigger > TriggerThreshold
+	{
+		CurrentJoyMultiplier := JoyMultiplierSlower
 	}
 	GetKeyState, JoyX, %JoystickNumber%JoyX
 	if JoyX > %JoyThresholdUpper%
@@ -209,12 +219,10 @@ CheckMode:
 		CurrentMode := 2
 		return
 	}
-		
 	if GamepadReady <> 1
 	{
 		return
 	}
-
 	ifWinExist Steam ahk_class CUIEngineWin32
 	{
 		CurrentMode := 2
@@ -225,26 +233,24 @@ CheckMode:
 		CurrentMode := 2
 		return
 	}
-	if State := XInput_GetState(0)
+	LT := State.bLeftTrigger
+	RT := State.bRightTrigger
+	if (RT > TriggerThreshold && LT > TriggerThreshold)
 	{
-		LT := State.bLeftTrigger
-		RT := State.bRightTrigger
-		if (RT > TriggerThreshold && LT > TriggerThreshold)
+		CurrentMode := CurrentMode + 1
+		if CurrentMode > %MaxMode%
 		{
-			CurrentMode := CurrentMode + 1
-			if CurrentMode > %MaxMode%
-			{
-				CurrentMode := 1
-			}
-			SwitchedMode := CurrentMode
-			if CurrentMode = 2
-				TrayTip,Mode changed,Gamepad is DISABLED,1,1
-			else
-				TrayTip,Mode changed,Gamepad is ENABLED,1,1
-			Sleep 1000
-			return
+			CurrentMode := 1
 		}
+		SwitchedMode := CurrentMode
+		if CurrentMode = 2
+			TrayTip,Mode changed,Gamepad is DISABLED,1,1
+		else
+			TrayTip,Mode changed,Gamepad is ENABLED,1,1
+		Sleep 1000
+		return
 	}
+	
 	if CurrentMode = 2
 	{
 		return

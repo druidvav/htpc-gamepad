@@ -20,7 +20,9 @@ XInput_Init(dll="xinput1_3")
     
     ; NOTE: These are based on my outdated copy of the DirectX SDK.
     ;       Newer versions of XInput may require additional constants.
-    
+	
+	ERROR_DEVICE_NOT_CONNECTED      := 1167
+	
     ; Device types available in XINPUT_CAPABILITIES
     XINPUT_DEVTYPE_GAMEPAD          := 0x01
 
@@ -41,6 +43,7 @@ XInput_Init(dll="xinput1_3")
     XINPUT_GAMEPAD_RIGHT_THUMB      := 0x0080
     XINPUT_GAMEPAD_LEFT_SHOULDER    := 0x0100
     XINPUT_GAMEPAD_RIGHT_SHOULDER   := 0x0200
+	XINPUT_GAMEPAD_GUIDE            := 0x0400 ; Undocumented
     XINPUT_GAMEPAD_A                := 0x1000
     XINPUT_GAMEPAD_B                := 0x2000
     XINPUT_GAMEPAD_X                := 0x4000
@@ -67,7 +70,7 @@ XInput_Init(dll="xinput1_3")
     _XInput_GetState        := DllCall("GetProcAddress" ,"ptr",_XInput_hm ,"astr","XInputGetState")
     _XInput_SetState        := DllCall("GetProcAddress" ,"ptr",_XInput_hm ,"astr","XInputSetState")
     _XInput_GetCapabilities := DllCall("GetProcAddress" ,"ptr",_XInput_hm ,"astr","XInputGetCapabilities")
-    
+	
     if !(_XInput_GetState && _XInput_SetState && _XInput_GetCapabilities)
     {
         XInput_Term()
@@ -99,11 +102,12 @@ XInput_Init(dll="xinput1_3")
 */
 XInput_GetState(UserIndex)
 {
-    global _XInput_GetState
+    global _XInput_hm,_XInput_GetState
     
     VarSetCapacity(xiState,16)
 
-    if ErrorLevel := DllCall(_XInput_GetState ,"uint",UserIndex ,"uint",&xiState)
+    xAddress := DllCall("GetProcAddress", "Uint", _XInput_hm, "Uint", 100)
+    if ErrorLevel := DllCall(xAddress,"uint",UserIndex ,"Ptr",&xiState)
         return 0
     
     return {

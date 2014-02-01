@@ -8,12 +8,12 @@ KeyboardRepeatTimeout = 600
 KeyboardRepeatRate = 40
 ; Button mapping
 JoystickNumber = 1
-MouseButtonLeft = 1
-MouseButtonRight = 2
-KeyboardButton = 4
-BackspaceButton = 5
-EnterButton = 6
-AltF4Button = 7
+MouseButtonLeft = 1   ; A
+MouseButtonRight = 2  ; B
+KeyboardButton = 4    ; Y
+BackspaceButton = 5   ; LB
+EnterButton = 6       ; RB
+AltF4Button = 7       ; Back
 ; END OF CONFIG SECTION
 
 #SingleInstance
