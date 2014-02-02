@@ -1,1 +1,1 @@
-process = XBoxStat.exeLoop{   prev := ErrorLevel   Process, Close, %process%   Process, Exist, %process%}until !ErrorLevel or (prev = ErrorLevel)
+KillXBoxStat(){	SetTimer, KillXBoxStat, 10000	return	KillXBoxStat:		process = XBoxStat.exe		Loop		{		   prev := ErrorLevel		   Process, Close, %process%		   Process, Exist, %process%		}		until !ErrorLevel or (prev = ErrorLevel)		return}KillXBoxStat()
