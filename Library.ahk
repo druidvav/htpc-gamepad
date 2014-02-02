@@ -77,6 +77,7 @@ KeyboardButton:
 		return
 	}
 	Send, ^!+-
+	Sleep 600
 	return
 	
 AltF4Button:
@@ -84,6 +85,7 @@ AltF4Button:
 		return
 	}
 	Send, !{F4}
+	Sleep 600
 	return
 
 MouseButtonLeft:
