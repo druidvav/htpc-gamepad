@@ -1,0 +1,1 @@
+KillTeamviewerPopup(){	SetTimer, KillTeamviewerPopup, 1000	return	KillTeamviewerPopup:		;WinWaitActive, Sponsored session, , 1		WinWaitActive, Спонсируемый сеанс, , 1		if (ErrorLevel = 0) {			Send, {Enter}		}		return}KillTeamviewerPopup()

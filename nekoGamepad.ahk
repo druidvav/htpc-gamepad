@@ -1,5 +1,6 @@
 #SingleInstance
 #Include KillXboxStat.ahk
+#Include KillTeamviewerPopup.ahk
 #Include XInput.ahk
 XInput_Init()
 
