@@ -234,12 +234,12 @@ EmergencyCombo:
 	{
 		if (EmergencyEnabled = 0)
 		{
-			TrayTip,Mode changed,Emergency! Mouse control activated.,1,1
+			NotifyUser("Emergency ON", "Mode activated")
 			EmergencyEnabled := 1
 		}
 		else
 		{
-			TrayTip,Mode changed,Emergency disabled.,1,1
+			NotifyUser("Emergency OFF", "Mode deactivated")
 			EmergencyEnabled := 0
 		}
 		Sleep 600
@@ -252,7 +252,7 @@ CheckMode:
 	{
 		if GamepadReady <> 1
 		{
-			TrayTip,Status,Gamepad ready,1,1
+			NotifyUser("Gamepad", "Ready")
 			CurrentLevel := ExpectedLevel
 		}
 		GamepadReady := 1
@@ -261,7 +261,7 @@ CheckMode:
 	{
 		if GamepadReady <> 0
 		{
-			TrayTip,Status,Gamepad disconnected,1,1
+			NotifyUser("Gamepad", "Disconnected")
 		}
 		GamepadReady := 0
 		CurrentLevel := LEVEL_NOTHING
@@ -288,7 +288,7 @@ CheckMode:
 	else
 	{
 		if (EmergencyEnabled = 1) {
-			TrayTip,Mode changed,Emergency disabled.,1,1
+			NotifyUser("Emergency OFF", "Mouse deactivated")
 			EmergencyEnabled := 0
 		}
 		BlockingEnabled := 0
@@ -300,10 +300,10 @@ CheckMode:
 	{
 		if (ExpectedLevel = LEVEL_NOTHING) {
 			ExpectedLevel := LEVEL_EVERYTHING
-			TrayTip,Mode changed,Gamepad is ENABLED,1,1
+			NotifyUser("Status", "Gamepad ENABLED")
 		} else {
 			ExpectedLevel := LEVEL_NOTHING
-			TrayTip,Mode changed,Gamepad is DISABLED,1,1
+			NotifyUser("Status", "Gamepad DISABLED")
 		}
 		CurrentLevel := ExpectedLevel
 		Sleep 1000

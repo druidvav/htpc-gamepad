@@ -2,7 +2,9 @@
 #Include Library\KillXboxStat.ahk
 #Include Library\KillTeamviewerPopup.ahk
 #Include Library\XInput.ahk
+#Include iMON\Library.ahk
 XInput_Init()
+iMON_Init()
 
 ; START OF CONFIG SECTION
 JoyMultiplier = 0.30
@@ -30,11 +32,17 @@ DetectBlockingApplication()
 	{ ; Steam big picture
 		return 1
 	}
-	ifWinActive XBMC
+	ifWinActive XBMC ahk_class XBMC
 	{
 		return 1
 	}
 	return 0
+}
+
+NotifyUser(Title, Text)
+{
+	TrayTip,%Title%,%Text%,1,1
+	iMON_VFD_Message(Title, Text, 4000)
 }
 
 #Include Library\Main.ahk
