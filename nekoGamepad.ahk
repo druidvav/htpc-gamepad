@@ -1,4 +1,5 @@
 #SingleInstance
+#Include KillXboxStat.ahk
 #Include XInput.ahk
 XInput_Init()
 
@@ -24,16 +25,12 @@ EmergencyCombo := XINPUT_GAMEPAD_GUIDE + XINPUT_GAMEPAD_Y
 
 DetectBlockingApplication()
 {
-	; Steam big picture
 	ifWinExist Steam ahk_class CUIEngineWin32
-	{
-		CurrentLevel := LEVEL_NOTHING
+	{ ; Steam big picture
 		return 1
 	}
-	; XBMC
 	ifWinActive XBMC
 	{
-		CurrentLevel := LEVEL_NOTHING
 		return 1
 	}
 	return 0

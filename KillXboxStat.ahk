@@ -1,0 +1,1 @@
+process = XBoxStat.exeLoop{   prev := ErrorLevel   Process, Close, %process%   Process, Exist, %process%}until !ErrorLevel or (prev = ErrorLevel)
