@@ -1,7 +1,18 @@
+/*
+ GamepadReady:
+  1: Gamepad connected and available
+  0: Gamepad is not available
+  -1: Not initialized yet
+*/
 GamepadReady := -1
-SwitchedMode := 1
-CurrentMode := 2
-MaxMode := 2
+
+LEVEL_EVERYTHING = 10
+LEVEL_MOUSE      = 5
+LEVEL_NOTHING    = 0
+CurrentLevel  := LEVEL_NOTHING
+ExpectedLevel := LEVEL_EVERYTHING
+BlockingEnabled  = 0
+EmergencyEnabled = 0
 
 JoyThresholdUpper := 50 + JoyThreshold
 JoyThresholdLower := 50 - JoyThreshold
@@ -22,66 +33,13 @@ SetTimer, MouseMove, 10
 SetTimer, MouseWheel, 70
 SetTimer, KeyboardDirections, 150
 SetTimer, SpecialButtons, 50
+SetTimer, EmergencyCombo, 50
 return
 
-KeyboardButton:
-	if CurrentMode > 1
-		return
-	Send, ^!+-
-	return
-	
-AltF4Button:
-	if CurrentMode > 1
-		return
-	Send, !{F4}
-	return
-	
-SpecialButtons:
-	if CurrentMode > 1
-		return
-	State := XInput_GetState(0)
-	if (State.wButtons & XINPUT_GAMEPAD_GUIDE)
-	{
-		Send #d
-		Sleep 600
-	}
-	return
-
-MouseButtonLeft:
-	if CurrentMode > 1
-		return
-	SetMouseDelay, -1
-	MouseClick, left,,, 1, 0, D
-	SetTimer, WaitForLeftButtonUp, 10
-	return
-
-WaitForLeftButtonUp:
-	if GetKeyState(JoystickPrefix . MouseButtonLeft)
-		return
-	SetTimer, WaitForLeftButtonUp, off
-	SetMouseDelay, -1
-	MouseClick, left,,, 1, 0, U
-	return
-
-MouseButtonRight:
-	if CurrentMode > 1
-		return
-	SetMouseDelay, -1
-	MouseClick, right,,, 1, 0, D
-	SetTimer, WaitForRightButtonUp, 10
-	return
-
-WaitForRightButtonUp:
-	if GetKeyState(JoystickPrefix . MouseButtonRight)
-		return
-	SetTimer, WaitForRightButtonUp, off
-	SetMouseDelay, -1
-	MouseClick, right,,, 1, 0, U
-	return
-
 BackspaceButton:
-	if CurrentMode > 1
+	if (CurrentLevel < LEVEL_EVERYTHING) {
 		return
+	}
 	Send, {Backspace}
 	SetTimer, WaitBackspaceButtonUp, %KeyboardRepeatTimeout%
 	return
@@ -97,8 +55,9 @@ WaitBackspaceButtonUp:
 	return
 	
 EnterButton:
-	if CurrentMode > 1
+	if (CurrentLevel < LEVEL_EVERYTHING) {
 		return
+	}
 	Send, {Enter}
 	SetTimer, WaitEnterButtonUp, %KeyboardRepeatTimeout%
 	return
@@ -113,13 +72,62 @@ WaitEnterButtonUp:
 		SetTimer, WaitBackspaceButtonUp, off
 	return
 
-MouseMove:
-	if CurrentMode > 1
+KeyboardButton:
+	if (CurrentLevel < LEVEL_EVERYTHING) {
 		return
+	}
+	Send, ^!+-
+	return
+	
+AltF4Button:
+	if (CurrentLevel < LEVEL_EVERYTHING) {
+		return
+	}
+	Send, !{F4}
+	return
+
+MouseButtonLeft:
+	if (CurrentLevel < LEVEL_MOUSE) {
+		return
+	}
+	SetMouseDelay, -1
+	MouseClick, left,,, 1, 0, D
+	SetTimer, WaitForLeftButtonUp, 10
+	return
+
+WaitForLeftButtonUp:
+	if GetKeyState(JoystickPrefix . MouseButtonLeft)
+		return
+	SetTimer, WaitForLeftButtonUp, off
+	SetMouseDelay, -1
+	MouseClick, left,,, 1, 0, U
+	return
+
+MouseButtonRight:
+	if (CurrentLevel < LEVEL_MOUSE) {
+		return
+	}
+	SetMouseDelay, -1
+	MouseClick, right,,, 1, 0, D
+	SetTimer, WaitForRightButtonUp, 10
+	return
+
+WaitForRightButtonUp:
+	if GetKeyState(JoystickPrefix . MouseButtonRight)
+		return
+	SetTimer, WaitForRightButtonUp, off
+	SetMouseDelay, -1
+	MouseClick, right,,, 1, 0, U
+	return
+
+MouseMove:
+	if (CurrentLevel < LEVEL_MOUSE) {
+		return
+	}
 	SetFormat, float, 03
 	MouseNeedsToBeMoved := false
 	CurrentJoyMultiplier := JoyMultiplier
-	State := XInput_GetState(0)
+	State := XInput_GetState(%JoystickNumber%-1)
 	if State.bLeftTrigger > TriggerThreshold
 	{
 		CurrentJoyMultiplier := JoyMultiplierSlower
@@ -162,8 +170,9 @@ MouseMove:
 	return
 
 MouseWheel:
-	if CurrentMode > 1
+	if (CurrentLevel < LEVEL_EVERYTHING) {
 		return
+	}
 	GetKeyState, Joy2Y, %JoystickNumber%JoyR
 	if Joy2Y > %JoyThresholdUpper%
 		Send {WheelDown}
@@ -177,8 +186,9 @@ MouseWheel:
 	return
 	
 KeyboardDirections:
-	if CurrentMode > 1
+	if (CurrentLevel < LEVEL_EVERYTHING) {
 		return
+	}
 	GetKeyState, JoyPOV, %JoystickNumber%JoyPOV
 	if JoyPOV = -1
 		return
@@ -200,59 +210,101 @@ KeyboardDirections:
 	else
 		send {Up}{Left}
 	return
-
+	
+SpecialButtons:
+	if (CurrentLevel < LEVEL_EVERYTHING) {
+		return
+	}
+	State := XInput_GetState(%JoystickNumber%-1)
+	if (State.wButtons = ToDesktopCombo)
+	{
+		Send #d
+		Sleep 600
+	}
+	return
+	
+EmergencyCombo:
+	if ((GamepadReady <> 1) || (BlockingEnabled <> 1)) {
+		return
+	}
+	State := XInput_GetState(%JoystickNumber%-1)
+	if (State.wButtons = EmergencyCombo)
+	{
+		if (EmergencyEnabled = 0)
+		{
+			TrayTip,Mode changed,Emergency! Mouse control activated.,1,1
+			EmergencyEnabled := 1
+		}
+		else
+		{
+			TrayTip,Mode changed,Emergency disabled.,1,1
+			EmergencyEnabled := 0
+		}
+		Sleep 600
+		return
+	}
+	return
+	
 CheckMode:
-	if State := XInput_GetState(0)
+	if State := XInput_GetState(%JoystickNumber%-1)
 	{
 		if GamepadReady <> 1
 		{
 			TrayTip,Status,Gamepad ready,1,1
-			CurrentMode := SwitchedMode
+			CurrentLevel := ExpectedLevel
 		}
 		GamepadReady := 1
 	}
 	else
 	{
 		if GamepadReady <> 0
+		{
 			TrayTip,Status,Gamepad disconnected,1,1
+		}
 		GamepadReady := 0
-		CurrentMode := 2
+		CurrentLevel := LEVEL_NOTHING
 		return
 	}
 	if GamepadReady <> 1
 	{
+		CurrentLevel := LEVEL_NOTHING
 		return
 	}
-	ifWinExist Steam ahk_class CUIEngineWin32
+	if DetectBlockingApplication()
 	{
-		CurrentMode := 2
+		BlockingEnabled := 1
+		if EmergencyEnabled
+		{
+			CurrentLevel := LEVEL_MOUSE
+		}
+		else
+		{
+			CurrentLevel := LEVEL_NOTHING
+		}
 		return
 	}
-	ifWinActive XBMC
+	else
 	{
-		CurrentMode := 2
-		return
+		if (EmergencyEnabled = 1) {
+			TrayTip,Mode changed,Emergency disabled.,1,1
+			EmergencyEnabled := 0
+		}
+		BlockingEnabled := 0
+		CurrentLevel := ExpectedLevel
 	}
 	LT := State.bLeftTrigger
 	RT := State.bRightTrigger
 	if (RT > TriggerThreshold && LT > TriggerThreshold)
 	{
-		CurrentMode := CurrentMode + 1
-		if CurrentMode > %MaxMode%
-		{
-			CurrentMode := 1
-		}
-		SwitchedMode := CurrentMode
-		if CurrentMode = 2
-			TrayTip,Mode changed,Gamepad is DISABLED,1,1
-		else
+		if (ExpectedLevel = LEVEL_NOTHING) {
+			ExpectedLevel := LEVEL_EVERYTHING
 			TrayTip,Mode changed,Gamepad is ENABLED,1,1
+		} else {
+			ExpectedLevel := LEVEL_NOTHING
+			TrayTip,Mode changed,Gamepad is DISABLED,1,1
+		}
+		CurrentLevel := ExpectedLevel
 		Sleep 1000
-		return
-	}
-	
-	if CurrentMode = 2
-	{
 		return
 	}
 	return
