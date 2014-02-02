@@ -1,7 +1,7 @@
 #SingleInstance
-#Include KillXboxStat.ahk
-#Include KillTeamviewerPopup.ahk
-#Include XInput.ahk
+#Include Library\KillXboxStat.ahk
+#Include Library\KillTeamviewerPopup.ahk
+#Include Library\XInput.ahk
 XInput_Init()
 
 ; START OF CONFIG SECTION
@@ -37,4 +37,4 @@ DetectBlockingApplication()
 	return 0
 }
 
-#Include Library.ahk
+#Include Library\Main.ahk
